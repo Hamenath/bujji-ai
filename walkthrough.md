@@ -75,3 +75,26 @@ tests\test_websocket.py ....                                             [100%]
 
 ================= 113 passed, 1 skipped, 1 warning in 10.49s ==================
 ```
+
+## Diagnostic Cleanup & Type-Safety Improvements
+
+In addition to implementing the core Phase 5B enhancements, we performed a thorough type-safety audit using Pyright and resolved all static analysis errors across both production code and the test suite:
+
+1. **URL Validator Type Guarding**:
+   - Explicitly converted raw socket addresses (`ip_str`) to string representation before performing split operations.
+   - Refactored checks on `ipv4_mapped` attributes to use an explicit `isinstance(ip, ipaddress.IPv6Address)` guard, satisfying Pyright's attribute-presence rules.
+
+2. **World Time Tool Helper Assertions**:
+   - Added static analysis assertions (`assert timezone_or_city is not None`) to guide Pyright when evaluating timezones in paths where coordinates are not provided.
+
+3. **Orchestrator Citation Handling**:
+   - Refactored `clean_citations` arguments to fall back to an empty string (`state.final_response or ""`) to resolve Pydantic schema type matching concerns.
+
+4. **Test Suite Type Consistency**:
+   - Configured explicit `data` and `metadata` assertions (`assert res.data is not None`) in test cases targeting weather tools, date calculator tools, and unit converter tools, guaranteeing subscript-safe dictionary accesses.
+
+All static analysis issues were resolved:
+- **Pyright report**: `0 errors, 0 warnings, 0 informations`
+- **Compiler checks**: `compileall` succeeded cleanly on `app` and `tests` directories.
+- **FastAPI backend test suite**: All 114 tests passed successfully.
+
