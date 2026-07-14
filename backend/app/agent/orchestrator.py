@@ -534,7 +534,11 @@ class AgentOrchestrator:
                 yield "response.chunk", {"content": res_content}
                 
             # Post-process citations
-            valid_ids = [src["id"] for src in final_sources]
+            valid_ids: List[int] = []
+            for src in final_sources:
+                src_id = src.get("id")
+                if isinstance(src_id, int):
+                    valid_ids.append(src_id)
             state.final_response = clean_citations(state.final_response or "", valid_ids)
 
             state.status = "completed"
