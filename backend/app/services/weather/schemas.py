@@ -50,6 +50,8 @@ class DailyForecastItem(BaseModel):
     temperature_min: float = Field(..., description="Minimum temperature")
     weather_code: int = Field(..., description="WMO weather interpretation code")
     description: str = Field(..., description="Text description of the weather condition")
+    precipitation_probability: Optional[float] = Field(default=None, description="Precipitation probability percentage")
+    precipitation_sum: Optional[float] = Field(default=None, description="Precipitation sum in mm")
 
 class WeatherData(BaseModel):
     latitude: float
@@ -59,4 +61,9 @@ class WeatherData(BaseModel):
     current_temp: float = Field(..., description="Current temperature")
     current_weather_code: int = Field(..., description="Current WMO weather interpretation code")
     current_description: str = Field(..., description="Text description of the current weather")
+    apparent_temperature: Optional[float] = Field(default=None, description="Feels-like temperature")
+    relative_humidity: Optional[float] = Field(default=None, description="Relative humidity percentage")
+    wind_speed: Optional[float] = Field(default=None, description="Wind speed")
+    precipitation: Optional[float] = Field(default=None, description="Precipitation amount")
+    observation_time: Optional[str] = Field(default=None, description="Observation timestamp")
     daily_forecast: List[DailyForecastItem] = Field(default_factory=list)

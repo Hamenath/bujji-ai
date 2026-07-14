@@ -26,10 +26,37 @@ UNIT_ALIASES = {
     "mps": "mps", "m/s": "mps", "meters per second": "mps",
     "kmh": "kmh", "km/h": "kmh", "kilometers per hour": "kmh",
     "mph": "mph", "miles per hour": "mph",
+
+    # Area
+    "square_meters": "square_meters", "sq_m": "square_meters", "sq_meter": "square_meters", "sq_meters": "square_meters", "square_meter": "square_meters", "m2": "square_meters", "m^2": "square_meters",
+    "square_kilometers": "square_kilometers", "sq_km": "square_kilometers", "sq_kilometer": "square_kilometers", "sq_kilometers": "square_kilometers", "square_kilometer": "square_kilometers", "km2": "square_kilometers", "km^2": "square_kilometers",
+    "square_miles": "square_miles", "sq_mi": "square_miles", "sq_mile": "square_miles", "sq_miles": "square_miles", "square_mile": "square_miles", "mi2": "square_miles", "mi^2": "square_miles",
+    "square_feet": "square_feet", "sq_ft": "square_feet", "sq_foot": "square_feet", "sq_feet": "square_feet", "square_foot": "square_feet", "ft2": "square_feet", "ft^2": "square_feet",
+    "square_inches": "square_inches", "sq_in": "square_inches", "sq_inch": "square_inches", "sq_inches": "square_inches", "square_inch": "square_inches", "in2": "square_inches", "in^2": "square_inches",
+    "acres": "acres", "acre": "acres", "ac": "acres",
+    "hectares": "hectares", "hectare": "hectares", "ha": "hectares",
+
+    # Volume
+    "liters": "liters", "liter": "liters", "l": "liters",
+    "milliliters": "milliliters", "milliliter": "milliliters", "ml": "milliliters",
+    "cubic_meters": "cubic_meters", "cubic_meter": "cubic_meters", "m3": "cubic_meters", "m^3": "cubic_meters",
+    "gallons": "gallons", "gallon": "gallons", "gal": "gallons",
+    "quarts": "quarts", "quart": "quarts", "qt": "quarts",
+    "pints": "pints", "pint": "pints", "pt": "pints",
+    "cups": "cups", "cup": "cups",
+    "fluid_ounces": "fluid_ounces", "floz": "fluid_ounces", "fl_oz": "fluid_ounces", "fluid_ounce": "fluid_ounces",
+
+    # Digital Storage
+    "bytes": "bytes", "byte": "bytes", "b": "bytes",
+    "kilobytes": "kilobytes", "kilobyte": "kilobytes", "kb": "kilobytes",
+    "megabytes": "megabytes", "megabyte": "megabytes", "mb": "megabytes",
+    "gigabytes": "gigabytes", "gigabyte": "gigabytes", "gb": "gigabytes",
+    "terabytes": "terabytes", "terabyte": "terabytes", "tb": "terabytes",
+    "petabytes": "petabytes", "petabyte": "petabytes", "pb": "petabytes",
 }
 
 # Base conversion factors relative to a reference unit
-# Reference units: meters (length), grams (weight), mps (speed)
+# Reference units: meters (length), grams (weight), mps (speed), square_meters (area), liters (volume), bytes (digital storage)
 LENGTH_FACTORS = {
     "meters": 1.0,
     "kilometers": 1000.0,
@@ -51,17 +78,50 @@ SPEED_FACTORS = {
     "mph": 0.44704               # 1 mph = 1609.344 / 3600 m/s
 }
 
+AREA_FACTORS = {
+    "square_meters": 1.0,
+    "square_kilometers": 1000000.0,
+    "square_miles": 2589988.110336,
+    "square_feet": 0.09290304,
+    "square_inches": 0.00064516,
+    "acres": 4046.8564224,
+    "hectares": 10000.0
+}
+
+VOLUME_FACTORS = {
+    "liters": 1.0,
+    "milliliters": 0.001,
+    "cubic_meters": 1000.0,
+    "gallons": 3.785411784,
+    "quarts": 0.946352946,
+    "pints": 0.473176473,
+    "cups": 0.2365882365,
+    "fluid_ounces": 0.0295735295625
+}
+
+DIGITAL_STORAGE_FACTORS = {
+    "bytes": 1.0,
+    "kilobytes": 1024.0,
+    "megabytes": 1048576.0,
+    "gigabytes": 1073741824.0,
+    "terabytes": 1099511627776.0,
+    "petabytes": 1125899906842624.0
+}
+
 class UnitConverterInput(BaseModel):
     value: float = Field(..., description="The numeric value to convert.")
-    from_unit: str = Field(..., description="The unit of the input value (e.g. 'celsius', 'miles', 'kg', 'mph').")
-    to_unit: str = Field(..., description="The target unit to convert to (e.g. 'fahrenheit', 'kilometers', 'lbs', 'kmh').")
+    from_unit: str = Field(..., description="The unit of the input value (e.g. 'celsius', 'miles', 'kg', 'mph', 'sq_m', 'liters', 'gb').")
+    to_unit: str = Field(..., description="The target unit to convert to (e.g. 'fahrenheit', 'kilometers', 'lbs', 'kmh', 'acres', 'ml', 'mb').")
 
 class UnitConverterTool(BaseTool):
     name: str = "unit_converter"
     description: str = (
         "Perform offline unit conversions for temperature (celsius, fahrenheit, kelvin), "
         "length/distance (meters, kilometers, miles, feet, inches), "
-        "weight/mass (grams, kilograms, pounds, ounces), and speed (mps, kmh, mph)."
+        "weight/mass (grams, kilograms, pounds, ounces), speed (mps, kmh, mph), "
+        "area (square_meters, square_kilometers, square_miles, square_feet, square_inches, acres, hectares), "
+        "volume (liters, milliliters, cubic_meters, gallons, quarts, pints, cups, fluid_ounces), "
+        "and digital storage (bytes, kilobytes, megabytes, gigabytes, terabytes, petabytes)."
     )
     input_schema: Any = UnitConverterInput
     permission_level: str = "safe"
@@ -144,6 +204,45 @@ class UnitConverterTool(BaseTool):
             mps = value * SPEED_FACTORS[u_from]
             res = mps / SPEED_FACTORS[u_to]
             return ToolResult(success=True, data={"result": round(res, 4), "from_unit": u_from, "to_unit": u_to})
+
+        # 5. Area Conversion
+        if u_from in AREA_FACTORS or u_to in AREA_FACTORS:
+            if u_from not in AREA_FACTORS or u_to not in AREA_FACTORS:
+                return ToolResult(
+                    success=False,
+                    error="INVALID_ARGUMENTS",
+                    metadata={"error_detail": f"Cannot convert between area unit '{from_unit}' and non-area unit '{to_unit}'."}
+                )
+            
+            sq_meters = value * AREA_FACTORS[u_from]
+            res = sq_meters / AREA_FACTORS[u_to]
+            return ToolResult(success=True, data={"result": round(res, 6), "from_unit": u_from, "to_unit": u_to})
+
+        # 6. Volume Conversion
+        if u_from in VOLUME_FACTORS or u_to in VOLUME_FACTORS:
+            if u_from not in VOLUME_FACTORS or u_to not in VOLUME_FACTORS:
+                return ToolResult(
+                    success=False,
+                    error="INVALID_ARGUMENTS",
+                    metadata={"error_detail": f"Cannot convert between volume unit '{from_unit}' and non-volume unit '{to_unit}'."}
+                )
+            
+            liters = value * VOLUME_FACTORS[u_from]
+            res = liters / VOLUME_FACTORS[u_to]
+            return ToolResult(success=True, data={"result": round(res, 6), "from_unit": u_from, "to_unit": u_to})
+
+        # 7. Digital Storage Conversion
+        if u_from in DIGITAL_STORAGE_FACTORS or u_to in DIGITAL_STORAGE_FACTORS:
+            if u_from not in DIGITAL_STORAGE_FACTORS or u_to not in DIGITAL_STORAGE_FACTORS:
+                return ToolResult(
+                    success=False,
+                    error="INVALID_ARGUMENTS",
+                    metadata={"error_detail": f"Cannot convert between digital storage unit '{from_unit}' and non-digital storage unit '{to_unit}'."}
+                )
+            
+            bytes_val = value * DIGITAL_STORAGE_FACTORS[u_from]
+            res = bytes_val / DIGITAL_STORAGE_FACTORS[u_to]
+            return ToolResult(success=True, data={"result": round(res, 6), "from_unit": u_from, "to_unit": u_to})
 
         return ToolResult(
             success=False,

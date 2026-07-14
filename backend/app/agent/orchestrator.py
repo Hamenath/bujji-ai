@@ -535,7 +535,7 @@ class AgentOrchestrator:
                 
             # Post-process citations
             valid_ids = [src["id"] for src in final_sources]
-            state.final_response = clean_citations(state.final_response, valid_ids)
+            state.final_response = clean_citations(state.final_response or "", valid_ids)
 
             state.status = "completed"
             state.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)

@@ -58,7 +58,7 @@ def validate_url(url: str) -> None:
     # Validate all resolved IPs
     for ip_str in ips:
         # Strip scope ID from IPv6 addresses if present (e.g. fe80::1%lo0 -> fe80::1)
-        clean_ip = ip_str.split("%")[0]
+        clean_ip = str(ip_str).split("%")[0]
         if not _is_ip_safe(clean_ip):
             raise SSRFBlockedError(f"Access to unsafe resolved IP is blocked: {ip_str}", code="SSRF_BLOCKED")
 
@@ -81,7 +81,7 @@ def _is_ip_safe(ip_str: str) -> bool:
             return False
 
         # Check IPv6-mapped IPv4 addresses
-        if hasattr(ip, "ipv4_mapped") and ip.ipv4_mapped:
+        if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
             if not _is_ip_safe(str(ip.ipv4_mapped)):
                 return False
 

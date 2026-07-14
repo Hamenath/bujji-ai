@@ -9,9 +9,10 @@ class WeatherCache:
     Provides long-term caching for static geocoding coordinates and short-term caching for forecasts.
     """
 
-    def __init__(self):
+    def __init__(self, max_size: int = 100):
         self._geo_cache: Dict[str, Tuple[GeocodingResult, float]] = {}
         self._weather_cache: Dict[str, Tuple[WeatherData, float]] = {}
+        self._max_size = max_size
         self._lock = threading.Lock()
 
     def get_geocoding(self, name: str) -> Optional[GeocodingResult]:
@@ -29,6 +30,9 @@ class WeatherCache:
         key = name.strip().lower()
         expiry = time.time() + ttl
         with self._lock:
+            if len(self._geo_cache) >= self._max_size and key not in self._geo_cache:
+                oldest_key = next(iter(self._geo_cache))
+                del self._geo_cache[oldest_key]
             self._geo_cache[key] = (result, expiry)
 
     def get_weather(self, lat: float, lon: float, forecast_days: int) -> Optional[WeatherData]:
@@ -47,6 +51,9 @@ class WeatherCache:
         key = f"{round(lat, 3)}:{round(lon, 3)}:{forecast_days}"
         expiry = time.time() + ttl
         with self._lock:
+            if len(self._weather_cache) >= self._max_size and key not in self._weather_cache:
+                oldest_key = next(iter(self._weather_cache))
+                del self._weather_cache[oldest_key]
             self._weather_cache[key] = (result, expiry)
 
     def clear(self) -> None:

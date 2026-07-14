@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_NAME: str = Field(default="Personal Agentic AI Assistant")
-    APP_VERSION: str = Field(default="0.5.0")
+    APP_VERSION: str = Field(default="0.5.1")
     APP_ENV: str = Field(default="development")
     DEBUG: bool = Field(default=True)
     API_V1_PREFIX: str = Field(default="/api/v1")

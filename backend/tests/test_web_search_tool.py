@@ -18,6 +18,8 @@ async def test_web_search_tool_success():
         
         result = await tool.execute(query="python", max_results=2)
         assert result.success is True
+        assert result.data is not None
+        assert result.metadata is not None
         assert result.data["query"] == "python"
         assert len(result.data["results"]) == 2
         assert result.data["results"][0]["title"] == "Python Info"
@@ -33,6 +35,8 @@ async def test_web_search_tool_empty():
         
         result = await tool.execute(query="some obscure query", max_results=5)
         assert result.success is True
+        assert result.data is not None
+        assert result.metadata is not None
         assert len(result.data["results"]) == 0
         assert result.metadata["result_count"] == 0
 
@@ -46,6 +50,7 @@ async def test_web_search_tool_provider_unavailable():
         result = await tool.execute(query="python")
         assert result.success is False
         assert result.error == "SEARCH_PROVIDER_UNAVAILABLE"
+        assert result.metadata is not None
         assert "ratelimit" in result.metadata["error_detail"]
 
 @pytest.mark.asyncio

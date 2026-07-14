@@ -38,6 +38,7 @@ async def test_weather_tool_coordinates_metric():
         
         result = await tool.execute(latitude=48.8566, longitude=2.3522, forecast_days=1, units="metric")
         assert result.success is True
+        assert result.data is not None
         assert result.data["location"] == "48.8566,2.3522"
         assert result.data["current_weather"]["temperature"] == 15.0
         assert result.data["current_weather"]["unit"] == "C"
@@ -69,6 +70,7 @@ async def test_weather_tool_location_imperial():
         
         result = await tool.execute(location="Paris", forecast_days=1, units="imperial")
         assert result.success is True
+        assert result.data is not None
         assert "Paris" in result.data["location"]
         assert result.data["current_weather"]["temperature"] == 50.0  # 10C -> 50F
         assert result.data["current_weather"]["unit"] == "F"
@@ -89,6 +91,7 @@ async def test_world_time_timezone_direct():
     
     result = await tool.execute(timezone_or_city="Europe/London")
     assert result.success is True
+    assert result.data is not None
     assert result.data["timezone"] == "Europe/London"
     assert "Europe/London" in result.data["location"]
     assert result.data["current_time"] is not None
@@ -104,6 +107,7 @@ async def test_world_time_city_geocoded():
         
         result = await tool.execute(timezone_or_city="Tokyo")
         assert result.success is True
+        assert result.data is not None
         assert "Tokyo" in result.data["location"]
         assert result.data["timezone"] == "Asia/Tokyo"
         assert result.data["current_time"] is not None
@@ -117,16 +121,19 @@ async def test_unit_converter_temperature():
     # 0C -> 32F
     res = await tool.execute(value=0, from_unit="celsius", to_unit="fahrenheit")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result"] == 32.0
     
     # 100C -> 373.15K
     res = await tool.execute(value=100, from_unit="c", to_unit="kelvin")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result"] == 373.15
     
     # 50F -> 10C
     res = await tool.execute(value=50, from_unit="fahrenheit", to_unit="celsius")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result"] == 10.0
 
 @pytest.mark.asyncio
@@ -136,11 +143,13 @@ async def test_unit_converter_length():
     # 1 mile -> 1.6093 km
     res = await tool.execute(value=1, from_unit="miles", to_unit="kilometers")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result"] == 1.6093
     
     # 10 feet -> 120 inches (1 ft = 12 inches)
     res = await tool.execute(value=10, from_unit="feet", to_unit="inches")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result"] == 120.0
 
 @pytest.mark.asyncio
@@ -150,6 +159,7 @@ async def test_unit_converter_weight():
     # 1 kg -> 2.2046 lbs
     res = await tool.execute(value=1, from_unit="kg", to_unit="pounds")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result"] == 2.2046
 
 @pytest.mark.asyncio
@@ -159,6 +169,7 @@ async def test_unit_converter_speed():
     # 100 kmh -> 62.1371 mph
     res = await tool.execute(value=100, from_unit="kmh", to_unit="mph")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result"] == 62.1371
 
 @pytest.mark.asyncio
@@ -179,6 +190,7 @@ async def test_date_calculator_difference():
     # Difference between 2026-07-13 and 2026-07-20 (7 days, 1 week)
     res = await tool.execute(operation="difference", start_date="2026-07-13", end_date="2026-07-20")
     assert res.success is True
+    assert res.data is not None
     assert res.data["difference_days"] == 7
     assert res.data["difference_weeks"] == 1.0
 
@@ -189,11 +201,13 @@ async def test_date_calculator_add_subtract():
     # Add 15 days to 2026-07-13 -> 2026-07-28
     res = await tool.execute(operation="add_subtract", start_date="2026-07-13", amount=15, unit="days")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result_date"] == "2026-07-28"
     
     # Subtract 2 weeks from 2026-07-13 -> 2026-06-29
     res = await tool.execute(operation="add_subtract", start_date="2026-07-13", amount=-2, unit="weeks")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result_date"] == "2026-06-29"
 
 @pytest.mark.asyncio
@@ -203,9 +217,11 @@ async def test_date_calculator_leap_year():
     # Feb 28, 2024 (leap year) + 1 day -> Feb 29, 2024
     res = await tool.execute(operation="add_subtract", start_date="2024-02-28", amount=1, unit="days")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result_date"] == "2024-02-29"
     
     # Feb 29, 2024 + 1 year -> Feb 28, 2025 (non-leap year edge case)
     res = await tool.execute(operation="add_subtract", start_date="2024-02-29", amount=1, unit="years")
     assert res.success is True
+    assert res.data is not None
     assert res.data["result_date"] == "2025-02-28"
